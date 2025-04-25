@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trivia Escolar</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 20px;
+    }
+    .container {
+      background: #fff;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    .question {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .options button {
+      display: block;
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #e0e0e0;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background 0.3s;
+      position: relative;
+    }
+    .options button.correct {
+      background: #4CAF50 !important;
+      color: white;
+    }
+    .options button.correct::after {
+      content: "🏅";
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2em;
+    }
+    .options button.incorrect {
+      background: #F44336 !important;
+      color: white;
+    }
+    #nextBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background-color: #2196F3;
+      color: white;
+      cursor: pointer;
+      display: none;
+    }
+    #result {
+      font-size: 1.2em;
+      text-align: center;
+      animation: bounceIn 1s;
+    }
+  </style>
+</head>
+<body>
+  <div class="container animate__animated animate__fadeIn">
+    <h2>Trivia de Conocimientos Generales</h2>
+    <div id="quiz">
+      <div id="questionContainer">
+        <div class="question" id="question"></div>
+        <div class="options" id="options"></div>
+        <button id="nextBtn" onclick="nextQuestion()">Siguiente</button>
+      </div>
+      <div id="result" class="animate__animated animate__bounceIn" style="display: none;"></div>
+    </div>
+  </div>
+
+  <!-- Sonidos -->
+  <audio id="correctSound" src="https://www.myinstants.com/media/sounds/correct-answer.mp3" preload="auto"></audio>
+  <audio id="incorrectSound" src="https://www.myinstants.com/media/sounds/incorrect.mp3" preload="auto"></audio>
+
+  <script>
+    const questions = [
+      {
+        question: "¿Cuál es el río más largo del mundo?",
+        options: ["Nilo", "Amazonas", "Yangtsé", "Misisipi"],
+        answer: 1
+      },
+      {
+        question: "¿Quién escribió 'Cien años de soledad'?",
+        options: ["Mario Vargas Llosa", "Pablo Neruda", "Gabriel García Márquez", "Jorge Luis Borges"],
+        answer: 2
+      },
+      {
+        question: "¿Cuál es el planeta más grande del sistema solar?",
+        options: ["Saturno", "Tierra", "Júpiter", "Marte"],
+        answer: 2
+      },
+      {
+        question: "¿Qué elemento químico tiene el símbolo 'O'?",
+        options: ["Oro", "Oxígeno", "Osmio", "Oxalato"],
+        answer: 1
+      },
+      {
+        question: "¿En qué continente se encuentra Egipto?",
+        options: ["Asia", "Europa", "África", "América"],
+        answer: 2
+      },
+      {
+        question: "¿Qué idioma se habla en Brasil?",
+        options: ["Español", "Portugués", "Inglés", "Francés"],
+        answer: 1
+      },
+      {
+        question: "¿Cuál es el resultado de 9 x 6?",
+        options: ["54", "45", "56", "63"],
+        answer: 0
+      },
+      {
+        question: "¿Qué instrumento tiene teclas, cuerdas y martillos?",
+        options: ["Guitarra", "Piano", "Violín", "Arpa"],
+        answer: 1
+      },
+      {
+        question: "¿Cuál es la capital de Japón?",
+        options: ["Seúl", "Pekín", "Tokio", "Bangkok"],
+        answer: 2
+      },
+      {
+        question: "¿Quién pintó 'La última cena'?",
+        options: ["Miguel Ángel", "Leonardo da Vinci", "Van Gogh", "Picasso"],
+        answer: 1
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    function showQuestion(index) {
+      const q = questions[index];
+      document.getElementById("question").textContent = q.question;
+      const optionsContainer = document.getElementById("options");
+      optionsContainer.innerHTML = "";
+      q.options.forEach((option, i) => {
+        const button = document.createElement("button");
+        button.textContent = option;
+        button.onclick = () => selectAnswer(i);
+        optionsContainer.appendChild(button);
+      });
+      document.getElementById("nextBtn").style.display = "none";
+    }
+
+    function selectAnswer(selectedIndex) {
+      const buttons = document.querySelectorAll("#options button");
+      const correctIndex = questions[currentQuestion].answer;
+      const correctSound = document.getElementById("correctSound");
+      const incorrectSound = document.getElementById("incorrectSound");
+
+      buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === correctIndex) btn.classList.add("correct");
+        if (i === selectedIndex && i !== correctIndex) btn.classList.add("incorrect");
+      });
+
+      if (selectedIndex === correctIndex) {
+        correctSound.play();
+        score++;
+      } else {
+        incorrectSound.play();
+      }
+
+      document.getElementById("nextBtn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion(currentQuestion);
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      document.getElementById("questionContainer").style.display = "none";
+      const result = document.getElementById("result");
+      let feedback;
+      if (score === 10) feedback = "¡Excelente! ¡Respondiste todas correctamente!";
+      else if (score >= 7) feedback = "¡Muy bien! Conoces bastante.";
+      else if (score >= 4) feedback = "Bien, pero puedes mejorar.";
+      else feedback = "¡Ánimo! Intenta otra vez y aprenderás más.";
+      result.innerHTML = `<p>Obtuviste ${score} de 10.</p><p>${feedback}</p>`;
+      result.style.display = "block";
+    }
+
+    // Iniciar trivia
+    showQuestion(currentQuestion);
+  </script>
+</body>
+</html>
